@@ -18,6 +18,16 @@ public interface ItripUserService {
     public Integer modify(ItripUser itripUser)throws Exception;
 
     public Integer removeById(Long id)throws Exception;
+    //用户注册异步刷新
+    public ItripUser getusercode(String usercode) throws  Exception;
+
+    //用户注册
+    public Integer getuser(ItripUser itripUser) throws Exception;
+
+    //用户手机注册
+    public Integer phone(ItripUser itripUser) throws  Exception;
+
+    public List<ItripUserTokenVO> find(String userCode,String password);
 
     public Page<List<ItripUser>> queryPageByMap(Map<String, Object> param, Integer pageNo, Integer pageSize)throws Exception;
 }

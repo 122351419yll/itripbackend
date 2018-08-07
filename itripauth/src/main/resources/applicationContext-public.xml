@@ -50,6 +50,7 @@
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
     </bean>
+
     <tx:advice id="advice" transaction-manager="transactionManager">
         <tx:attributes>
             <tx:method name="save*" propagation="REQUIRED"/>
@@ -80,4 +81,25 @@
         <constructor-arg value="${redis.port}"/>
         <constructor-arg value="${redis.timeout}"/>
     </bean>
+
+    <bean id="activationMailMessage"  class="org.springframework.mail.SimpleMailMessage" scope="prototype">
+        <property name="from" value="yll1223514819@163.com"/>
+        <property name="subject" value="请激活您的账户"/>
+        <property name="text" value=""/>
+    </bean>
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="smtp.163.com"/>
+        <property name="port" value="25"/>
+        <property name="username" value="yll1223514819@163.com"/>
+        <property name="password" value="Yll1223514819"/>
+        <property name="protocol" value="smtp"/>
+        <property name="defaultEncoding" value="UTF-8"/>
+        <property name="javaMailProperties">
+            <props>
+                <!-- 设置SMTP服务器需要用户验证 -->
+                <prop key="mail.smtp.auth">true</prop>
+            </props>
+        </property>
+    </bean>
+
 </beans>

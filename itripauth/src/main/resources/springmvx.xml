@@ -29,6 +29,4 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
             </bean>
         </mvc:message-converters>
     </mvc:annotation-driven>
-
-
 </beans>

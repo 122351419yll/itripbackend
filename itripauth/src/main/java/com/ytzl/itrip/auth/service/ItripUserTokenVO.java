@@ -4,7 +4,26 @@ package com.ytzl.itrip.auth.service;
  * Created by Administrator on 2018/7/11.
  */
 public class ItripUserTokenVO {
+    private  String userCode;
+    private  String password;
     private  long gen;
+
+    public String getUserCode() {
+        return userCode;
+    }
+
+    public void setUserCode(String userCode) {
+        this.userCode = userCode;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     private  long abc;
    private  String token;
 

@@ -2,24 +2,22 @@ package com.ytzl.itrip.auth.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.ytzl.itrip.auth.service.ItripUserService;
 import com.ytzl.itrip.auth.service.ItripUserTokenVO;
+import com.ytzl.itrip.beans.model.ItripPhone;
 import com.ytzl.itrip.beans.model.ItripUser;
+import com.ytzl.itrip.beans.model.ItripUserVo;
 import com.ytzl.itrip.utils.common.DigestUtil;
 import com.ytzl.itrip.utils.common.Dto;
 import com.ytzl.itrip.utils.common.DtoUtil;
 import com.ytzl.itrip.utils.common.RedisAPI;
+import org.springframework.beans.BeanUtils;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +32,9 @@ public class ItripUserController{
     private ItripUserService itripUserService;
     @Resource
     private RedisAPI redisAPI;
+
+
+
     @RequestMapping(value = "getByid",method = RequestMethod.POST,
             produces = "application/json")
 
@@ -106,6 +107,95 @@ public class ItripUserController{
             }
 
         }
+        return  DtoUtil.returnFail("系统繁忙，请稍后再试","");
+
+    }
+    //用户注册异步刷新
+    @RequestMapping(value = "/ckusr",method = RequestMethod.GET,produces = "application/json")
+    @ResponseBody
+    public Dto zc(@RequestParam("name")String userCode){
+        try {
+            ItripUser user =itripUserService.getusercode(userCode);
+            if (!user.getUserCode().equals(userCode)){
+                return DtoUtil.returnSuccess();
+            }else{
+                return DtoUtil.returnFail("用户已注册","30002");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
+    }
+    //用户注册
+    @RequestMapping(value = "/doregister",method = RequestMethod.POST,produces = "application/json")
+    @ResponseBody
+
+    public Dto doregister(@RequestBody ItripUserVo itripUserVo){
+        ItripUser itripUser = new ItripUser();
+        BeanUtils.copyProperties(itripUserVo,itripUser);
+        try {
+            itripUserService.getuser(itripUser);
+            return DtoUtil.returnSuccess();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return  DtoUtil.returnFail("系统繁忙，请稍后再试","");
+    }
+    //用户注册激活
+    @RequestMapping(value = "/activate",method = RequestMethod.PUT,produces = "application/json")
+    @ResponseBody
+    public Dto activ(String user,String code){
+        try {
+            ItripUser useryz  = itripUserService.getusercode(user);
+            if(useryz!=null){
+                if(redisAPI.exists("activate"+useryz.getUserCode())){
+                    if(redisAPI.get("activate"+useryz.getUserCode()).equals(code)){
+                        useryz.setActivated(1);
+                        itripUserService.modify(useryz);
+                        return DtoUtil.returnSuccess("激活成功");
+                    }
+                }
+            }
+            return DtoUtil.returnFail("激活失败","30002");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return  null;
+    }
+
+    //手机用户注册
+    @RequestMapping(value = "/registerbyphone",method = RequestMethod.POST,produces = "application/json")
+    @ResponseBody
+    public Dto phone(@RequestBody ItripPhone itripPhone){
+        ItripUser itripUser= new ItripUser();
+        BeanUtils.copyProperties(itripPhone,itripUser);
+        try {
+            itripUserService.phone(itripUser);
+            return DtoUtil.returnSuccess();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return  DtoUtil.returnFail("系统繁忙，请稍后再试","");
+
+    }
+    @RequestMapping(value = "/validatephone",method = RequestMethod.PUT,produces = "application/json")
+    @ResponseBody
+    public Dto vailphone(String user,String code){
+        try {
+            ItripUser userphone = itripUserService.getusercode(user);
+            if (userphone!=null){
+                if (redisAPI.exists("phone"+userphone.getUserCode())){
+                    if(redisAPI.get("phone"+userphone.getUserCode()).equals(code)){
+                        userphone.setActivated(1);
+                        itripUserService.modify(userphone);
+                        return DtoUtil.returnSuccess("激活成功");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return  DtoUtil.returnFail("系统繁忙，请稍后再试","");
+
     }
 }
