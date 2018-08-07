@@ -41,7 +41,7 @@ public class ItripUserController{
     @ResponseBody
     public Dto<ItripUser> getById(Long id){
         try {
-            return DtoUtil.returnSuccess("查询成功",
+            return DtoUtil.returnSuccess("查询 成功",
                     itripUserService.getById(id));
         } catch (Exception e) {
             e.printStackTrace();
