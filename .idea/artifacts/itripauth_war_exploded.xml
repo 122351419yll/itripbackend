@@ -117,6 +117,7 @@
         <element id="file-copy" path="$PROJECT_DIR$/itripauth/target/itripauth-1.0-SNAPSHOT/META-INF/MANIFEST.MF" />
       </element>
       <element id="javaee-facet-resources" facet="itripauth/web/Web" />
+      <element id="directory" name="folder" />
     </root>
   </artifact>
 </component>

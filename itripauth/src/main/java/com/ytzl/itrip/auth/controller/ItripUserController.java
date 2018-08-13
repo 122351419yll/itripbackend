@@ -52,7 +52,7 @@ public class ItripUserController{
 
     @RequestMapping(value = "/dologin",method = RequestMethod.POST,produces = "application/json")
     @ResponseBody
-    public Object getuser(@RequestParam("name") String name,
+    public Dto getuser(@RequestParam("name") String name,
                           @RequestParam("password") String password
                             ,HttpServletRequest rep){
         try {
@@ -65,7 +65,6 @@ public class ItripUserController{
             if (null==itripUser){
                 return DtoUtil.returnFail("用户名不正确","10001");
             }else {
-
                 String pwd = DigestUtil.hmacSign(password,"yuntuzhilian");
                 if (itripUser.getUserPassword().equals(pwd)) {
                    if (itripUser.getActivated()!=0){
@@ -124,7 +123,7 @@ public class ItripUserController{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return  DtoUtil.returnFail("系统繁忙，请稍后再试","");
     }
     //用户注册
     @RequestMapping(value = "/doregister",method = RequestMethod.POST,produces = "application/json")
@@ -170,6 +169,7 @@ public class ItripUserController{
         ItripUser itripUser= new ItripUser();
         BeanUtils.copyProperties(itripPhone,itripUser);
         try {
+
             itripUserService.phone(itripUser);
             return DtoUtil.returnSuccess();
         } catch (Exception e) {
@@ -198,4 +198,7 @@ public class ItripUserController{
         return  DtoUtil.returnFail("系统繁忙，请稍后再试","");
 
     }
+
+
+
 }
