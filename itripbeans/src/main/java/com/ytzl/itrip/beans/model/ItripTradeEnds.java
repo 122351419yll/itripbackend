@@ -13,6 +13,25 @@ public class ItripTradeEnds implements Serializable {
     //标识字段(默认0：未处理；1：处理中)
     private String flag;
 
+    private Date CreationDate;
+
+    private Date ModifyDate;
+
+    public Date getCreationDate() {
+        return CreationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        CreationDate = creationDate;
+    }
+
+    public Date getModifyDate() {
+        return ModifyDate;
+    }
+
+    public void setModifyDate(Date modifyDate) {
+        ModifyDate = modifyDate;
+    }
 
     public void setId(Long id) {
         this.id = id;

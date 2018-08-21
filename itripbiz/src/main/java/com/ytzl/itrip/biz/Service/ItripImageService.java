@@ -19,5 +19,7 @@ public interface ItripImageService {
 
     public Integer removeById(Long id)throws Exception;
 
+    public Boolean IsImg(String ImgName)throws  Exception;
+
     public Page<List<ItripImage>> queryPageByMap(Map<String, Object> param, Integer pageNo, Integer pageSize)throws Exception;
 }

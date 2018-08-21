@@ -6,6 +6,7 @@ import com.ytzl.itrip.utils.common.EmptyUtils;
 import com.ytzl.itrip.utils.common.Page;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,15 @@ public class ItripImageServiceImpl implements ItripImageService {
 
     public Integer removeById(Long id)throws Exception{
         return itripImageMapper.removeById(id);
+    }
+
+    @Override
+    public Boolean IsImg(String ImgName) throws Exception {
+        File file = new File(ImgName);
+        if(file.exists()){
+            return true;
+        }
+        return false;
     }
 
     public Page<List<ItripImage>> queryPageByMap(Map<String,Object> param,Integer pageNo,Integer pageSize)throws Exception{

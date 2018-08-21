@@ -80,6 +80,7 @@ public class controller {
     public Dto getimg(@PathVariable(value = "targetId") int targetId){
         Map map =new HashMap();
         map.put("targetId",targetId);
+        map.put("type",0);
         try {
             List<ItripAreaDic> list =itripImageService.getListByMap(map);
             if(list!=null || list.size()!=0){
@@ -93,34 +94,49 @@ public class controller {
         return DtoUtil.returnFail("系统异常","30005");
     }
     //查询酒店id查询酒店特色,商圈
-    @RequestMapping(value = "/hotel/getvideodesc/{hotelId} ",method = RequestMethod.GET,produces = "application/json")
+    @RequestMapping(value = "/hotel/getvideodesc/{hotelId}",method = RequestMethod.GET,produces = "application/json")
     @ResponseBody
-    public Dto getvideoedesc(@PathVariable(value = "hotelId") int hotelId){
-    if(hotelId!=0){
-        itripfeatureVo itripfeatureVo = new itripfeatureVo();
-     Map map = new HashMap();
-     map.put("id",hotelId);
-        try {
-            List<ItripHotel> listByMap =itripHotelService.getListByMap(map);
-            Map map1 = new HashMap();
-            map1.put("parent",listByMap.get(0).getCityId());
-            Map map2 = new HashMap();
-            map2.put("hotelId",hotelId);
-            Map map3 = new HashMap();
-            List<ItripHotelFeature> listByMap2 =itripHotelFeatureService .getListByMap(map2);
-            map3.put("id",listByMap2.get(0).getFeatureId());
-            String hotelName = listByMap.get(0).getHotelName();
-            List<ItripAreaDic> listByMap1 = itripAreaDicService.getListByMap(map1);
-            List<ItripLabelDic> listByMap3 = itripLabelDicService.getListByMap(map3);
-            itripfeatureVo itripLabelVO=new itripfeatureVo();
-            itripLabelVO.setHotelName(hotelName);
-            itripLabelVO.setTradingAreaNameList(listByMap1);
-            itripLabelVO.setHotelFeatureList(listByMap3);
-            return DtoUtil.returnSuccess("",itripLabelVO);
+    public Dto getvideoedesc(@PathVariable(value = "hotelId") long hotelId){
+        itripfeatureVo itripHotelVideodescVO=new itripfeatureVo();
+        if(hotelId!=0){
+            try {
+                //1.(1)获取酒店特色
+                List listUtil = new ArrayList<>();
+                Map map = new HashMap();
+                map.put("hotelId",hotelId);
+                List<ItripHotelFeature> list =itripHotelFeatureService.getListByMap(map);
+                for (ItripHotelFeature itripHotelFeature:list) {
+                    //1.(2)根据featureId,获得name字段的值
+                    ItripLabelDic byId1=itripLabelDicService.getById(itripHotelFeature.getFeatureId());
+                    listUtil.add(byId1.getName());
+                }
+                //将listUtil存入vo类中
+                itripHotelVideodescVO.setHotelFeatureList(listUtil);
+                //2.获取商圈（用list集合存储）和酒店名称
+                //(1)根据酒店id在itrip_hotel表中获取cityId和酒店名称
+                Map maphotel = new HashMap();
+                maphotel.put( "id",hotelId);
+                List<ItripHotel> listByMap1 = itripHotelService.getListByMap(maphotel);
+                //将酒店名称存入vo类中
+                itripHotelVideodescVO.setHotelName(listByMap1.get(0).getHotelName());
+                //(2)根据城市id,获取商圈（并且设置isTradingArea=1）
+                Map mapTrap = new HashMap();
+                List listvo=new ArrayList<>();
+
+                //获取的cityid
+                map.put("parent",listByMap1.get(0).getCityId());
+                map.put("isTradingArea",1);
+                List<ItripAreaDic> listAreaDic = itripAreaDicService.getListByMap(map);
+                for (ItripAreaDic it:listAreaDic) {
+                    listvo.add(it.getName());
+                }
+                itripHotelVideodescVO.setTradingAreaNameList(listvo);
+                return  DtoUtil.returnSuccess("成功",itripHotelVideodescVO);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }else{
+
         return DtoUtil.returnFail("酒店id不能为空","100214");
     }
     return null;
@@ -277,34 +293,29 @@ public class controller {
                     itripqueryhotelroombyhotelVo.getStartDate()!=null){
                 if(itripqueryhotelroombyhotelVo.getStartDate().compareTo(itripqueryhotelroombyhotelVo.getEndDate())<0){
                     Map map = new HashMap();
-                    map.put("endDate",new Date());
+                    map.put("endDate",itripqueryhotelroombyhotelVo.getEndDate());
                     map.put("hotelId",itripqueryhotelroombyhotelVo.getHotelId());
-                    map.put("isBooke",itripqueryhotelroombyhotelVo.getIsBook());
+                    map.put("isBook",itripqueryhotelroombyhotelVo.getIsBook());
                     map.put("isCancel",itripqueryhotelroombyhotelVo.getIsCancel());
                     map.put("isHavingBreakfast",itripqueryhotelroombyhotelVo.getIsHavingBreakfast());
                     map.put("isTimelyResponse",itripqueryhotelroombyhotelVo.getIsTimelyResponse());
                     map.put("payType",itripqueryhotelroombyhotelVo.getPayType());
                     map.put("roomBedTypeId",itripqueryhotelroombyhotelVo.getRoomBedTypeId());
-                    map.put("startDate",new Date());
-
+                    map.put("startDate",itripqueryhotelroombyhotelVo.getStartDate());
                     try {
                         List<ItripHotelRoom> itripHotelRooms = itripHotelRoomService.getListByMap(map);
                         List<ItripqueryhotelroombyhotelVo> itripqueryhotelroombyhotelVos = new ArrayList<>();
+                        List list = new ArrayList();
                         for (ItripHotelRoom itriphotelRoom:itripHotelRooms) {
-                            ItripqueryhotelroombyhotelVo itripqueryhotelroombyhotelVo1 =
-                                    new ItripqueryhotelroombyhotelVo();
-                            itripqueryhotelroombyhotelVo1.setHotelId(itriphotelRoom.getHotelId());
-                            itripqueryhotelroombyhotelVo1.setIsBook(itriphotelRoom.getIsBook());
-                            itripqueryhotelroombyhotelVo1.setIsCancel(itriphotelRoom.getIsCancel());
-                            itripqueryhotelroombyhotelVo1.setIsHavingBreakfast(itriphotelRoom.getIsHavingBreakfast());
-                            itripqueryhotelroombyhotelVo1.setIsTimelyResponse(itriphotelRoom.getIsTimelyResponse());
-                            itripqueryhotelroombyhotelVo1.setPayType(itriphotelRoom.getPayType());
-                            itripqueryhotelroombyhotelVo1.setRoomBedTypeId(itriphotelRoom.getRoomBedTypeId());
-                            itripqueryhotelroombyhotelVos.add(itripqueryhotelroombyhotelVo1);
+                            List<ItripHotelRoom> itripHotelRooms1 = new ArrayList<>();
+                            itripHotelRooms1.add(itriphotelRoom);
+                            list.add(itripHotelRooms1);
                         }
-                        return DtoUtil.returnSuccess("成功",itripqueryhotelroombyhotelVos);
+                        list.add(itripHotelRooms);
+                        return DtoUtil.returnSuccess("true",list);
                     } catch (Exception e) {
                         e.printStackTrace();
+                        return DtoUtil.returnFail("系统异常","100304");
                     }
                 }
             }else {
