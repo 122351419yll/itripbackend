@@ -33,6 +33,16 @@
         </trim>
     </select>
 
+    <select id="getAvgByMap" resultType="com.ytzl.itrip.dao.mapper.Itripgethotelscore">
+       SELECT
+      ROUND(AVG(ic.facilitiesScore),1) AS avgFacilitiesScore,
+      ROUND(AVG(ic.positionScore),1) AS avgPositionScore,
+      ROUND(AVG(ic.serviceScore),1) AS avgServiceScore,
+      ROUND(AVG(ic.hygieneScore),1) AS avgHygieneScore,
+      ROUND(AVG(ic.score),1) AS  avgScore
+      FROM itrip_comment ic WHERE ic.hotelId=#{hotelId}
+    </select>
+
     <select id="getListByMap" resultType="ItripComment"
             parameterType="java.util.Map">
             select

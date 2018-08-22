@@ -41,6 +41,43 @@
         </trim>
     </select>
 
+    <select id="queryHotelStore" parameterType="map" resultType="com.ytzl.itrip.dao.mapper.ItripHotelOrderSotreVo">
+ SELECT * FROM (
+  SELECT
+    store.roomId,
+    store.recordDate,
+    CASE
+    WHEN SUM(ord.count) IS NULL THEN
+    store.store
+    ELSE
+      store.store -SUM(ord.count)
+    END store
+    FROM
+     itrip_hotel_temp_store store
+     LEFT  JOIN itrip_hotel_order ORD ON store.roomId =ord.roomId
+     AND ord.orderStatus=0
+     AND store.recordDate BETWEEN ord.checkInDate
+     AND ord.checkOutDate
+     WHERE
+          store.roomId=#{roomId}
+      GROUP BY
+         store.roomId,
+         store.recordDate
+  ) AS t1 WHERE t1.recordDate BETWEEN #{startTime} AND #{endTime}
+  ORDER BY t1.store ASC
+    </select>
+
+    <update id="flushStore" parameterType="map" statementType="CALLABLE">
+        {
+        CALL pre_flush_store(
+        #{startTime,jdbcType=DATE,mode=IN},
+        #{endTime,jdbcType=DATE,mode=IN},
+        #{roomId,jdbcType=BIGINT,mode=IN},
+        #{hotelId,jdbcType=BIGINT,mode=IN}
+        )
+        }
+    </update>
+
     <select id="getListByMap" resultType="ItripHotelOrder"
             parameterType="java.util.Map">
             select
@@ -248,62 +285,62 @@
         </trim>
     </select>
 
-    <insert id="save" parameterType="ItripHotelOrder">
+    <insert id="save" parameterType="com.ytzl.itrip.beans.model.ItripHotelOrder" useGeneratedKeys="true" keyProperty="id" >
         insert into itrip_hotel_order(
-            userId ,      <!--用户id-->
-            orderType ,      <!--订单类型(0:旅游产品 1:酒店产品 2：机票产品)-->
-            orderNo ,      <!--订单号-->
-            tradeNo ,      <!--交易编号-->
-            hotelId ,      <!--冗余字段 酒店id-->
-            hotelName ,      <!--冗余字段 酒店名称-->
-            roomId ,      <!--房间id-->
-            count ,      <!--消耗数量-->
-            bookingDays ,      <!--预订天数-->
-            checkInDate ,      <!--入住时间-->
-            checkOutDate ,      <!--退房时间-->
-            orderStatus ,      <!--订单状态（0：待支付 1:已取消 2:支付成功 3:已消费 4：已点评）-->
-            payAmount ,      <!--支付金额-->
-            payType ,      <!--支付方式:1:支付宝 2:微信 3:到店付-->
-            noticePhone ,      <!--联系手机号-->
-            noticeEmail ,      <!--联系邮箱-->
-            specialRequirement ,      <!--特殊需求-->
-            isNeedInvoice ,      <!--是否需要发票（0：不需要 1：需要）-->
-            invoiceType ,      <!--发票类型（0：个人 1：公司）-->
-            invoiceHead ,      <!--发票抬头-->
-            linkUserName ,      <!--入住人名称-->
-            bookType ,      <!--0:WEB端 1:手机端 2:其他客户端-->
-            creationDate ,      <!--预定时间-->
-            createdBy ,      <!---->
-            modifyDate ,      <!--支付完成时间-->
-            modifiedBy       <!---->
+        userId ,      <!--用户id-->
+        orderType ,      <!--订单类型(0:旅游产品 1:酒店产品 2：机票产品)-->
+        orderNo ,      <!--订单号-->
+        tradeNo ,      <!--交易编号-->
+        hotelId ,      <!--冗余字段 酒店id-->
+        hotelName ,      <!--冗余字段 酒店名称-->
+        roomId ,      <!--房间id-->
+        count ,      <!--消耗数量-->
+        bookingDays ,      <!--预订天数-->
+        checkInDate ,      <!--入住时间-->
+        checkOutDate ,      <!--退房时间-->
+        orderStatus ,      <!--订单状态（0：待支付 1:已取消 2:支付成功 3:已消费 4：已点评）-->
+        payAmount ,      <!--支付金额-->
+        payType ,      <!--支付方式:1:支付宝 2:微信 3:到店付-->
+        noticePhone ,      <!--联系手机号-->
+        noticeEmail ,      <!--联系邮箱-->
+        specialRequirement ,      <!--特殊需求-->
+        isNeedInvoice ,      <!--是否需要发票（0：不需要 1：需要）-->
+        invoiceType ,      <!--发票类型（0：个人 1：公司）-->
+        invoiceHead ,      <!--发票抬头-->
+        linkUserName ,      <!--入住人名称-->
+        bookType ,      <!--0:WEB端 1:手机端 2:其他客户端-->
+        creationDate ,      <!--预定时间-->
+        createdBy ,      <!---->
+        modifyDate ,      <!--支付完成时间-->
+        modifiedBy       <!---->
         )
         values(
-                    #{userId} ,      <!--用户id-->
-                    #{orderType} ,      <!--订单类型(0:旅游产品 1:酒店产品 2：机票产品)-->
-                    #{orderNo} ,      <!--订单号-->
-                    #{tradeNo} ,      <!--交易编号-->
-                    #{hotelId} ,      <!--冗余字段 酒店id-->
-                    #{hotelName} ,      <!--冗余字段 酒店名称-->
-                    #{roomId} ,      <!--房间id-->
-                    #{count} ,      <!--消耗数量-->
-                    #{bookingDays} ,      <!--预订天数-->
-                    #{checkInDate} ,      <!--入住时间-->
-                    #{checkOutDate} ,      <!--退房时间-->
-                    #{orderStatus} ,      <!--订单状态（0：待支付 1:已取消 2:支付成功 3:已消费 4：已点评）-->
-                    #{payAmount} ,      <!--支付金额-->
-                    #{payType} ,      <!--支付方式:1:支付宝 2:微信 3:到店付-->
-                    #{noticePhone} ,      <!--联系手机号-->
-                    #{noticeEmail} ,      <!--联系邮箱-->
-                    #{specialRequirement} ,      <!--特殊需求-->
-                    #{isNeedInvoice} ,      <!--是否需要发票（0：不需要 1：需要）-->
-                    #{invoiceType} ,      <!--发票类型（0：个人 1：公司）-->
-                    #{invoiceHead} ,      <!--发票抬头-->
-                    #{linkUserName} ,      <!--入住人名称-->
-                    #{bookType} ,      <!--0:WEB端 1:手机端 2:其他客户端-->
-                    #{creationDate} ,      <!--预定时间-->
-                    #{createdBy} ,      <!---->
-                    #{modifyDate} ,      <!--支付完成时间-->
-                    #{modifiedBy}       <!---->
+        #{userId} ,      <!--用户id-->
+        #{orderType} ,      <!--订单类型(0:旅游产品 1:酒店产品 2：机票产品)-->
+        #{orderNo} ,      <!--订单号-->
+        #{tradeNo} ,      <!--交易编号-->
+        #{hotelId} ,      <!--冗余字段 酒店id-->
+        #{hotelName} ,      <!--冗余字段 酒店名称-->
+        #{roomId} ,      <!--房间id-->
+        #{count} ,      <!--消耗数量-->
+        #{bookingDays} ,      <!--预订天数-->
+        #{checkInDate} ,      <!--入住时间-->
+        #{checkOutDate} ,      <!--退房时间-->
+        #{orderStatus} ,      <!--订单状态（0：待支付 1:已取消 2:支付成功 3:已消费 4：已点评）-->
+        #{payAmount} ,      <!--支付金额-->
+        #{payType} ,      <!--支付方式:1:支付宝 2:微信 3:到店付-->
+        #{noticePhone} ,      <!--联系手机号-->
+        #{noticeEmail} ,      <!--联系邮箱-->
+        #{specialRequirement} ,      <!--特殊需求-->
+        #{isNeedInvoice} ,      <!--是否需要发票（0：不需要 1：需要）-->
+        #{invoiceType} ,      <!--发票类型（0：个人 1：公司）-->
+        #{invoiceHead} ,      <!--发票抬头-->
+        #{linkUserName} ,      <!--入住人名称-->
+        #{bookType} ,      <!--0:WEB端 1:手机端 2:其他客户端-->
+        #{creationDate} ,      <!--预定时间-->
+        #{createdBy} ,      <!---->
+        #{modifyDate} ,      <!--支付完成时间-->
+        #{modifiedBy}       <!---->
         )
     </insert>
 

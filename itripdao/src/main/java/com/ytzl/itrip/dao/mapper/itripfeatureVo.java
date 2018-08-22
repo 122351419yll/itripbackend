@@ -7,9 +7,7 @@ import com.ytzl.itrip.beans.model.ItripLabelDic;
 
 import java.util.List;
 
-/**
- * Created by l骆明 on 2018/8/10.
- */
+
 public class itripfeatureVo {
     private String hotelName;
     private List<ItripAreaDic> tradingAreaNameList;
@@ -30,7 +28,6 @@ public class itripfeatureVo {
     public List<ItripLabelDic> getHotelFeatureList() {
         return hotelFeatureList;
     }
-
     public void setHotelFeatureList(List<ItripLabelDic> hotelFeatureList) {
         this.hotelFeatureList = hotelFeatureList;
     }

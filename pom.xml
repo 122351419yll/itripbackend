@@ -419,6 +419,11 @@
             <artifactId>solr-solrj</artifactId>
             <version>5.3.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.ytzl.itrip</groupId>
+            <artifactId>alipaysdk</artifactId>
+            <version>3.0.0</version>
+        </dependency>
     </dependencies>
 
 

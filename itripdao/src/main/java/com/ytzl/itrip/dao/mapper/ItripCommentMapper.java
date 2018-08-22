@@ -18,4 +18,5 @@ public interface ItripCommentMapper {
 
 	public Integer removeById(@Param(value = "id") Long id)throws Exception;
 
+	public Itripgethotelscore getAvgByMap(Long id)throws Exception;
 }

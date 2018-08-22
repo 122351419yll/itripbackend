@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <context:property-placeholder location="classpath*:db.properties"/>
+    <context:component-scan base-package="com.ytzl.itrip"/>
+
+    <!--配置数据源-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${mysql.driverClass}"/>
+        <property name="jdbcUrl" value="${mysql.jdbcUrl}"/>
+        <property name="user" value="${mysql.user}"/>
+        <property name="password" value="${mysql.password}"/>
+        <!--连接池中保留的最小连接数。 -->
+        <property name="minPoolSize" value="${mysql.minPoolSize}"/>
+        <!--连接池中保留的最大连接数。Default: 15 -->
+        <property name="maxPoolSize" value="${mysql.maxPoolSize}"/>
+        <!--初始化时获取的连接数，取值应在minPoolSize与maxPoolSize之间。Default: 3 -->
+        <property name="initialPoolSize" value="${mysql.initialPoolSize}"/>
+        <!--最大空闲时间,60秒内未使用则连接被丢弃。若为0则永不丢弃。Default: 0 -->
+        <property name="maxIdleTime" value="${mysql.maxIdleTime}"/>
+        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->
+        <property name="acquireIncrement" value="${mysql.acquireIncrement}"/>
+        <!--JDBC的标准参数，用以控制数据源内加载的PreparedStatements数量。但由于预缓存的statements 属于单个connection而不是整个连接池。所以设置这个参数需要考虑到多方面的因素。
+            如果maxStatements与maxStatementsPerConnection均为0，则缓存被关闭。Default: 0 -->
+        <property name="maxStatements" value="${mysql.maxStatements}"/>
+        <!--每60秒检查所有连接池中的空闲连接。Default: 0 -->
+        <property name="idleConnectionTestPeriod" value="${mysql.idleConnectionTestPeriod}"/>
+        <!--定义在从数据库获取新连接失败后重复尝试的次数。Default: 30 -->
+        <property name="acquireRetryAttempts" value="${mysql.acquireRetryAttempts}"/>
+        <!--获取连接失败将会引起所有等待连接池来获取连接的线程抛出异常。但是数据源仍有效 保留，并在下次调用getConnection()的时候继续尝试获取连接。如果设为true，那么在尝试
+            获取连接失败后该数据源将申明已断开并永久关闭。Default: false -->
+        <property name="breakAfterAcquireFailure" value="${mysql.breakAfterAcquireFailure}"/>
+        <!--因性能消耗大请只在需要的时候使用它。如果设为true那么在每个connection提交的 时候都将校验其有效性。建议使用idleConnectionTestPeriod或automaticTestTable
+            等方法来提升连接测试的性能。Default: false -->
+        <property name="testConnectionOnCheckout" value="${mysql.testConnectionOnCheckout}"/>
+    </bean>
+    <bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="typeAliasesPackage" value="com.ytzl.itrip.beans.model"/>
+        <property name="mapperLocations" value="classpath*:mapper.xml/*.xml"/>
+    </bean>
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <tx:advice id="advice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="modify*" propagation="REQUIRED"/>
+            <tx:method name="remove" propagation="REQUIRED"/>
+            <tx:method name="*" propagation="SUPPORTS"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* com.ytzl.itrip.biz.Service.*.*())"/>
+        <aop:advisor advice-ref="advice" pointcut-ref="pointcut"/>
+    </aop:config>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.ytzl.itrip.dao.mapper"/>
+        <property name="sqlSessionFactory" ref="sessionFactory"/>
+    </bean>
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+    <property name="maxActive" value="${redis.maxActive}"/>
+    <property name="minIdle" value="${redis.maxIdle}"/>
+    <property name="maxWait" value="${redis.maxWait}"/>
+    <property name="testOnBorrow" value="${redis.testOnBorrow}"/>
+
+</bean>
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg ref="jedisPoolConfig"/>
+        <constructor-arg value="${redis.host}"/>
+        <constructor-arg value="${redis.port}"/>
+        <constructor-arg value="${redis.timeout}"/>
+    </bean>
+    <bean id="alipayConfig" class="com.ytzl.itrip.trade.Config.AlipayConfig">
+        <!--字符编码-->
+        <property name="charset" value="UTF-8"/>
+        <!--商户私钥-->
+        <property name="merchant_private_key"
+                  value="MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDhmnOwxBOVd6tLYnG4BY4OjtEYndB85Dl3V6zVtq1leOE/vCG8Syy5vS8mayfH5XTkrYpEPSplPx46AiojIDTZpWgCawL3XWfn7LTG7ASXiB4O2sQUPJvA1i+3V0FwKfMsgLdViVFTgYiFON972O1Szx/ZgV/YI2IUrDVW1mIZfB1psWn4CKvGYOP6RbqqspEQpSvn4GVB/aBM63KPvu2e6DHzZROGyjMZvn/auGuRWWfFtZk6zVxtDtXgxTVbKtTZNVPkSB3nJoDiQ7VjWcrlDLcwSgZ4SoyHGUPanEseF+D703sQuh08D2gsJwUDF2ldH0k5F9ONd8HqaaaZv/SvAgMBAAECggEAEIX/czLpPElHgn3zVkcR4H8VUXg9jOgqTVNelUiL6qKv3LsqvV/EJtZ0XZv7jeiAZz9OoTDZqhC1ZgpCi9AQDuDOfV7ZGMT+lz3+/5LJw0905CGhutm1jqohVIxPfqeT5+6Ffv5Pto4GMbu4opmAyE/jRUr0eiAdTuZOAc4x4SvSvQjjvk9Z1vSb9a2P/ikA1xUFVToQG/8m9gOIy/srJ2bSQrYstCxUg+5r/xPeWC0kqLVAhQd60u/VpgoE4M5B6JSYoj8RYWa5kWbbT8omeVbMHlafQ3BTGPL8uIPLQWw2b4kla3TAheAAj4P1OveNpZXs8/06FzsFB5Stu+OuAQKBgQD8P8NjrUKEXPeXBmNgHOpqkL/6kx2W2O07m/YV9DVeWMQPnoB3RpCnjQV54vdDIQHC9UfvQBqp1W1h+K/X1pkL5NL0SIBj1t9clzx+Bd92fVTjnl7+0WEljEjoxGqvlhzLmzTRCWcxIqTsnIkZGDTcxmzDKvKk+P4p2j1eDiXXkwKBgQDk9UGcGEMoyDbMZ23/eazlpEap9ThIHSghAJytszgcyk1un4lVucUHROLXKvYzvjyBg/P/nhyEz2HZI9Wi6fLrk5xV216SyQTZnqHYSmnIRbry3pJpP64sdV6PYUJ5Hp9bk9eSvj+Cko+vo9sbwvMoDERO6cMmqYknSNQbSdHn9QKBgQCVHsDMcUWsaCU6E921mQJ/gxjq8gOBBLaiEZ4V9muCXelx7lq1qHKlinmdR66y8ZVQAp7G8leQ5Qon69NQPp31aQ3Iuf+khgc/fmyVd7VWH9uKQDqaW38ZqmgDqvIC4TQerZ84oF1vr7Jd6mAmBKhjh64OZppRKp1ecpTqwGRgnwKBgGZ9p04RylaCMY2UqzfWpt/xhrRkEjqt2p3TYU+cT30Lzle70MVwMFPNsWGyWJ3XBczQXbRKeee10c5a7TJNWbG81RnV5mL820/zY+2neezt0f8QRSgaGoTKUXcLia8gVyOubazBvzpbEzkDt3yY6zI9M4LDv9kZwUy1nEVO6UjVAoGBAOia9IU/iTba2gldPWslFdqDViJ4JbzhalwAiF7ZTkFaC0oerC0PR8lvd21wAnHlViFiqidBdfudn9MB/bxhS2lZD/CtAZf1Qs/kyIR3GvxTCMdzleFanpVvc46Po/8ItcrPgKRIoP71WwgpXMBI0ypSkAmS3wfRtbD5gXFXQZhz"/>
+        <!--支付宝公钥-->
+        <property name="alipay_public_key"
+                  value="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4ZpzsMQTlXerS2JxuAWODo7RGJ3QfOQ5d1es1batZXjhP7whvEssub0vJmsnx+V05K2KRD0qZT8eOgIqIyA02aVoAmsC911n5+y0xuwEl4geDtrEFDybwNYvt1dBcCnzLIC3VYlRU4GIhTjfe9jtUs8f2YFf2CNiFKw1VtZiGXwdabFp+AirxmDj+kW6qrKREKUr5+BlQf2gTOtyj77tnugx82UThsozGb5/2rhrkVlnxbWZOs1cbQ7V4MU1WyrU2TVT5Egd5yaA4kO1Y1nK5Qy3MEoGeEqMhxlD2pxLHhfg+9N7ELodPA9oLCcFAxdpXR9JORfTjXfB6mmmmb/0rwIDAQAB"/>
+        <!--签名方式-->
+        <property name="sign_type" value="RSA2"/>
+        <!--appId-->
+        <property name="app_id" value="2016091700535739"/>
+        <!--异步通知路径-->
+        <property name="notify_url" value="http:localhost:8080/trade/api/notify"/>
+        <!--同步通知路径-->
+        <property name="return_url" value="http:localhost:8080/trade/api/return"/>
+        <!--支付宝网关-->
+        <property name="gatewayUrl" value="https://openapi.alipaydev.com/gateway.do"/>
+        <!--支付宝网关-->
+        <property name="format" value="json"/>
+        <property name="log_path" value="C:\\"/>
+        <property name="url" value="https://openapi.alipaydev.com/gateway.do"/>
+    </bean>
+
+</beans>

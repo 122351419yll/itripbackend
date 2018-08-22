@@ -111,13 +111,13 @@
           <element id="library" level="project" name="Maven: org.codehaus.woodstox:stax2-api:3.1.4" />
           <element id="library" level="project" name="Maven: org.codehaus.woodstox:woodstox-core-asl:4.4.1" />
           <element id="library" level="project" name="Maven: org.noggit:noggit:0.6" />
+          <element id="library" level="project" name="Maven: com.ytzl.itrip:alipaysdk:3.0.0" />
         </element>
       </element>
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/itripauth/target/itripauth-1.0-SNAPSHOT/META-INF/MANIFEST.MF" />
       </element>
       <element id="javaee-facet-resources" facet="itripauth/web/Web" />
-      <element id="directory" name="folder" />
     </root>
   </artifact>
 </component>

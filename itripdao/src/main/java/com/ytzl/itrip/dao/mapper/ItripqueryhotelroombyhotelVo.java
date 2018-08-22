@@ -7,13 +7,13 @@ import io.swagger.models.auth.In;
  */
 public class ItripqueryhotelroombyhotelVo {
     private String endDate;//退房日期
-    private long hotelId;//酒店id
+    private Long hotelId;//酒店id
     private Integer isBook;//是否预定（1.预定 0.为预定）
     private Integer isCancel;//是否可以取消 0.不可以 1.可以
     private Integer isHavingBreakfast;//是否有早餐0.没有1.有
     private Integer isTimelyResponse;//是否及时响应 0.不及时1.及时
     private Integer payType;//1.在线支付 2.到店支付 3.不限
-    private long roomBedTypeId;//床型id
+    private Long roomBedTypeId;//床型id
     private String startDate;//入住日期
 
     public String getEndDate() {
@@ -24,11 +24,11 @@ public class ItripqueryhotelroombyhotelVo {
         this.endDate = endDate;
     }
 
-    public long getHotelId() {
+    public Long getHotelId() {
         return hotelId;
     }
 
-    public void setHotelId(long hotelId) {
+    public void setHotelId(Long hotelId) {
         this.hotelId = hotelId;
     }
 
@@ -72,11 +72,11 @@ public class ItripqueryhotelroombyhotelVo {
         this.payType = payType;
     }
 
-    public long getRoomBedTypeId() {
+    public Long getRoomBedTypeId() {
         return roomBedTypeId;
     }
 
-    public void setRoomBedTypeId(long roomBedTypeId) {
+    public void setRoomBedTypeId(Long roomBedTypeId) {
         this.roomBedTypeId = roomBedTypeId;
     }
 

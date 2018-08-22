@@ -14,7 +14,11 @@ public interface ItripHotelTempStoreMapper {
 
 	public Integer save(ItripHotelTempStore itripHotelTempStore)throws Exception;
 
+	public List<ItripHotelTempStore> getStoreByMap(Map map)throws Exception;
+
 	public Integer modify(ItripHotelTempStore itripHotelTempStore)throws Exception;
+
+	public Integer modifyHotelStore(Map map)throws Exception;
 
 	public Integer removeById(@Param(value = "id") Long id)throws Exception;
 
